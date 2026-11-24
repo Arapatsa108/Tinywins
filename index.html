@@ -450,7 +450,7 @@ function boostLine(){
 function reward(kind,o){
   o=o||{};const calm=!!o.calm,pts=o.pts==null?10:o.pts,before=level();S.points+=pts;
   const m=pick(MSG[kind]||MSG.generic);let extra=o.extra||'';
-  if(!extra&&!calm&&Math.random()<.28)extra=boostLine();
+  
   showReward(T(m[0],m[1]),pts,extra,calm);
   if(calm){glow();chime()}else{confetti(o.big?'big':'small');o.big?fanfare():pling()}
   if(level()>before)setTimeout(()=>{showReward(T('Level up! Your companion grew.','Niveau supérieur ! Ton compagnon a grandi.'),0,'',false);confetti('big')},2200);
@@ -460,7 +460,7 @@ function badgeInfo(id){
   const L={first:['First spark','Première étincelle'],p100:['Hundred club','Club des cent'],p500:['Five hundred','Cinq cents'],goal1:['Goal getter','Objectif atteint'],week3:['Week conqueror','Semaine conquise'],proj1:['Project closer','Finisseur de projet'],comeback:['Comeback kid','Retour en force'],tiny1:['Two-minute starter','Démarreur de deux minutes'],note1:['Self-cheerleader','Supporter de soi']};
   if(L[id])return{n:T(L[id][0],L[id][1]),c:'var(--sun)'};
   let m=id.match(/^(pray|move|vit)_(\d+)$/);
-  if(m){const nm={pray:['Prayer','Prière'],move:['Movement','Mouvement'],vit:['Vitamins','Vitamines']}[m[1]];return{n:T(nm[0]+' · '+m[2]+' days',nm[1]+' · '+m[2]+' jours'),c:{pray:'var(--sky)',move:'var(--coral)',vit:'var(--mint)'}[m[1]]}}
+  if(m){const nm={pray:['Reading','Lecture'],move:['Movement','Mouvement'],vit:['Vitamins','Vitamines']}[m[1]];return{n:T(nm[0]+' · '+m[2]+' days',nm[1]+' · '+m[2]+' jours'),c:{pray:'var(--sky)',move:'var(--coral)',vit:'var(--mint)'}[m[1]]}}
   m=id.match(/^rec_(\d+)$/);
   if(m)return{n:T('Recited ','Récité ')+num(m[1]),c:'var(--violet)'};
   return{n:id,c:'var(--sun)'}}
@@ -539,7 +539,7 @@ const ANCH=[
  {k:'food',t:()=>TM('food'),win:150,icon:'bowl',short:['Eat','Repas'],long:['Did you eat? Did you drink?','Tu as mangé ? Tu as bu ?'],sub:['Fuel first, everything else second.','Le carburant d’abord, le reste ensuite.'],done:d=>!!d.food},
  {k:'mood',t:()=>TM('mood'),win:150,icon:'face',short:['Mood','Humeur'],long:['Quick mood check','Petit point humeur'],sub:['One tap. Five seconds.','Un appui. Cinq secondes.'],done:d=>d.mood2!=null},
  {k:'project',t:()=>TM('project'),win:360,icon:'list',short:['Project','Projet'],long:['Today’s project','Le projet du jour'],sub:['Just one. We’ll make it tiny.','Un seul. On va le rendre minuscule.'],done:d=>!!(d.project&&d.project.done)},
- {k:'pray',t:()=>TM('pray'),win:300,icon:'pray',short:['Prayers','Prières'],long:['Evening prayers','Prières du soir'],sub:['A quiet moment.','Un moment de calme.'],done:d=>!!d.pray},
+ {k:'pray',t:()=>TM('pray'),win:300,icon:'book',short:['Reading','Lecture'],long:['Evening reading','Lecture du soir'],sub:['A quiet page or two.','Une page ou deux au calme.'],done:d=>!!d.pray},
  {k:'review',t:()=>1230,win:210,icon:'book',short:['Wins','Bilan'],long:['See today’s wins','Voir les victoires du jour'],sub:['It’s all good news.','Que de bonnes nouvelles.'],done:d=>!!d.review},
  {k:'lights',t:()=>TM('lights'),win:240,icon:'moon',short:['Lights off','Extinction'],long:['Lights off soon','Bientôt l’extinction des feux'],sub:['Wind down when you’re ready.','Ralentis quand tu es prêt.'],done:d=>!!d.lights}];
 const ANCH_BY=k=>ANCH.find(a=>a.k===k);
@@ -641,7 +641,7 @@ V.home=function(){
   const nowK=cur&&cur.due?cur.a.k:'';
   const strip='<div class="strip" aria-label="'+T('Your day','Ta journée')+'">'+ANCH.map(a=>'<button class="chip '+(a.done(d)?'done':'')+' '+(a.k===nowK?'cur':'')+'" data-act="anchor" data-v="'+a.k+'">'+ic(a.icon)+'<b>'+hhmm(a.t())+'</b><span>'+T(a.short[0],a.short[1])+'</span></button>').join('')+'</div>';
   return '<div class="hello"><div class="grow"><h1>'+greet+'</h1><div class="muted">'+esc(date)+'</div></div><button class="crit" data-act="go" data-v="rewards" aria-label="'+T('Your companion','Ton compagnon')+'">'+critter(level())+'</button></div>'+
-   '<div class="stack"><button class="aff" data-act="affToggle" aria-expanded="'+ui.aff+'"><div class="big">'+esc(bestShort())+'</div>'+(ui.aff?'<div class="more">'+esc(bestLong())+'</div>':'<div class="hint">'+T('Tap to read more','Touche pour en lire plus')+'</div>')+'</button>'+now+goal.replace(/<\/div>$/,wgline+'</div>')+quick+strip+'</div>'}
+   '<div class="stack">'+now+goal.replace(/<\/div>$/,wgline+'</div>')+quick+strip+'</div>'}
 V.checkin=function(){
   const d=Dg();
   return head(T('Morning check-in','Bilan du matin'),true)+'<div class="stack">'+
@@ -697,8 +697,8 @@ V.project=function(){
    '<div class="row"><button class="btn sm b-ghost" data-act="projEdit">'+ic('edit')+T('Edit and reorder steps','Modifier et réordonner')+'</button><button class="btn sm b-ghost" data-act="exitTask">'+ic('close')+T('Leave task mode','Quitter le mode tâche')+'</button></div></div>'}
 V.pray=function(){
   const d=Dg(),st=habitStats('pray');
-  return backOnly()+'<div class="calm"><h1>'+T('Evening prayers','Prières du soir')+'</h1><p>'+T('Take your time. Nothing else is needed right now.','Prends ton temps. Rien d’autre n’est nécessaire maintenant.')+'</p>'+
-   '<button class="cbtn main '+(d.pray?'done':'')+'" data-act="tick" data-v="pray" aria-pressed="'+!!d.pray+'">'+(d.pray?T('Held with care','Gardé avec soin'):T('I prayed','J’ai prié'))+'</button>'+
+  return backOnly()+'<div class="calm"><h1>'+T('Evening reading','Lecture du soir')+'</h1><p>'+T('Take your time. Nothing else is needed right now.','Prends ton temps. Rien d’autre n’est nécessaire maintenant.')+'</p>'+
+   '<button class="cbtn main '+(d.pray?'done':'')+'" data-act="tick" data-v="pray" aria-pressed="'+!!d.pray+'">'+(d.pray?T('Held with care','Gardé avec soin'):T('I read','J’ai lu'))+'</button>'+
    (st.cur>0?'<p class="small">'+(st.active?T(st.cur+' days in a row','Série de '+st.cur+' jours'):T('Paused at '+st.cur+'. Resume whenever you like.','En pause à '+st.cur+'. Reprends quand tu veux.'))+'</p>':'')+
    '<div class="row" style="justify-content:center"><button class="cbtn" style="font-size:19px;padding:10px 20px;min-height:46px" data-act="go" data-v="recite">'+T('Count recitations','Compter les récitations')+'</button><button class="cbtn" style="font-size:19px;padding:10px 20px;min-height:46px" data-act="chime">'+T('Soft chime','Carillon doux')+'</button></div></div>'}
 V.lights=function(){
@@ -715,7 +715,7 @@ function wins(d,k){
   else if(d.goal)w.push(T('You picked a goal: ','Tu as choisi un objectif : ')+d.goal.text);
   if(d.steps>0)w.push(d.steps+' '+T(d.steps>1?'project steps finished':'project step finished',d.steps>1?'étapes de projet finies':'étape de projet finie'));
   if(d.project&&d.project.done)w.push(T('Project finished: ','Projet terminé : ')+d.project.name);
-  if(d.pray)w.push(T('Evening prayers','Prières du soir'));
+  if(d.pray)w.push(T('Evening reading','Lecture du soir'));
   S.recs.forEach(r=>{const n=r.log.filter(e=>e.t==='add'&&e.k===k).reduce((a,e)=>a+e.d,0);if(n>0)w.push(T('Recited ','Récité ')+num(n)+' · '+r.name)});
   const dumps=S.inbox.filter(i=>dkey(new Date(i.ts))===k).length;
   if(dumps)w.push(T('You parked '+dumps+' thought'+(dumps>1?'s':'')+' safely','Tu as mis '+dumps+' pensée'+(dumps>1?'s':'')+' de côté'));
@@ -763,7 +763,7 @@ function wgCard(){
    (L.length===3&&done===3?'<div class="small"><b>'+T('All three done. Huge.','Les trois sont faits. Énorme.')+'</b></div>':'')+'</div>'}
 V.week=function(){
   const ws=weekStart(today()),t=today(),isSun=new Date().getDay()===0;
-  const hab=[['pray','pray',T('Evening prayers','Prières du soir'),T('prayers','prières'),'var(--sky)'],['move','run',T('Sport or movement','Sport ou mouvement'),T('days moved','jours actifs'),'var(--coral)'],['vit','pill',T('Vitamins','Vitamines'),T('vitamin days','jours de vitamines'),'var(--mint)']];
+  const hab=[['pray','book',T('Evening reading','Lecture du soir'),T('reading days','jours de lecture'),'var(--sky)'],['move','run',T('Sport or movement','Sport ou mouvement'),T('days moved','jours actifs'),'var(--coral)'],['vit','pill',T('Vitamins','Vitamines'),T('vitamin days','jours de vitamines'),'var(--mint)']];
   const card=h=>{
     const st=habitStats(h[0]),tot=weekTotal(h[0]);
     const dots='<div class="dots">'+[0,1,2,3,4,5,6].map(i=>{const k=addDays(ws,i),on=Dg(k)[h[0]],lab=new Date(k+'T12:00:00').toLocaleDateString(loc(),{weekday:'narrow'});return '<div class="dotc"><div class="dot '+(on?'on':'')+' '+(k===t?'today':'')+' '+(k>t?'fut':'')+'" '+(on?'style="background:'+h[4]+'"':'')+'>'+ic('check')+'</div>'+lab+'</div>'}).join('')+'</div>';
@@ -786,10 +786,10 @@ V.more=function(){
    mi('history','chart',T('Mood history','Humeur'),T('Your week','Ta semaine'))+
    mi('rewards','gift',T('Rewards','Récompenses'),T('Level ','Niveau ')+level())+
    mi('review','book',T('Today’s wins','Victoires du jour'),T('All good news','Que du positif'))+
-   mi('pray','pray',T('Evening prayers','Prières du soir'),hhmm(TM('pray')))+
+   mi('pray','book',T('Evening reading','Lecture du soir'),hhmm(TM('pray')))+
    mi('lights','moon',T('Lights off','Extinction'),hhmm(TM('lights')))+
    mi('settings','gear',T('Settings','Réglages'),T('Times, messages, backup','Heures, messages, sauvegarde'))+'</div>'+
-   '<button class="btn" data-act="showLoad">'+ic('heart')+T('Remember my load','Me rappeler ma charge')+'</button></div>'}
+   '</div>'}
 function inspiration(){
   const t=today(),pool=S.notes.slice().sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)).map(n=>n.text).concat(INSP.map(x=>T(x[0],x[1])));
   const i=(S.meta.insp[t]||0);let h=0;for(const c of t)h=(h*31+c.charCodeAt(0))>>>0;
@@ -849,10 +849,9 @@ V.settings=function(){
    (storageOK?'':'<div class="card" style="background:var(--sun);color:#3A2A00">'+T('This browser is not keeping data right now (private window?). Copy a backup before you close the page.','Ce navigateur ne garde pas les données pour le moment (navigation privée ?). Copie une sauvegarde avant de fermer la page.')+'</div>')+
    '<div class="card"><h2>'+T('Language','Langue')+'</h2><div class="chips" style="justify-content:flex-start"><button class="chp '+(st.lang==='en'?'on':'')+'" data-act="setLang" data-v="en">English</button><button class="chp '+(st.lang==='fr'?'on':'')+'" data-act="setLang" data-v="fr">Français</button></div></div>'+
    '<div class="card"><h2>'+T('Look','Apparence')+'</h2><div class="chips" style="justify-content:flex-start">'+[['auto',T('Auto','Auto')],['light',T('Light','Clair')],['dark',T('Dim','Sombre')]].map(x=>'<button class="chp '+(st.theme===x[0]?'on':'')+'" data-act="setTheme" data-v="'+x[0]+'">'+x[1]+'</button>').join('')+'</div></div>'+
-   '<div class="card"><h2>'+T('Reminder times','Heures des rappels')+'</h2>'+tr('checkin',T('Morning check-in','Bilan du matin'))+tr('goal',T('Morning goal','Objectif du jour'))+tr('water',T('Drink','Boisson'))+tr('food',T('Eat and drink','Manger et boire'))+tr('mood',T('Mood check','Point humeur'))+tr('project',T('Project block','Bloc projet'))+tr('pray',T('Evening prayers','Prières du soir'))+tr('lights',T('Lights off','Extinction'))+
+   '<div class="card"><h2>'+T('Reminder times','Heures des rappels')+'</h2>'+tr('checkin',T('Morning check-in','Bilan du matin'))+tr('goal',T('Morning goal','Objectif du jour'))+tr('water',T('Drink','Boisson'))+tr('food',T('Eat and drink','Manger et boire'))+tr('mood',T('Mood check','Point humeur'))+tr('project',T('Project block','Bloc projet'))+tr('pray',T('Evening reading','Lecture du soir'))+tr('lights',T('Lights off','Extinction'))+
    '<p class="small muted">'+T('Reminders appear when the app is open. A missed one just disappears, no penalty.','Les rappels apparaissent quand l’appli est ouverte. Un rappel manqué disparaît simplement, sans pénalité.')+'</p></div>'+
-   '<div class="card"><h2>'+T('Sound and motion','Son et animations')+'</h2>'+togRow('sound',T('Sounds','Sons'))+'<div class="row" style="padding:8px 0"><button class="btn sm" data-act="testSound">'+T('Play test sound','Tester le son')+'</button></div>'+togRow('confetti',T('Confetti and animation','Confettis et animations'))+togRow('prayerConfetti',T('Confetti for prayer and recitation','Confettis pour prière et récitation'),T('Off keeps those moments calm','Désactivé : ces moments restent calmes'))+togRow('awake',T('Keep screen awake','Garder l’écran allumé'),T('While the app is open','Tant que l’appli est ouverte'))+togRow('notif',T('Notifications','Notifications'),T('Only works while the app is open','Fonctionne seulement quand l’appli est ouverte'))+'</div>'+
-   '<div class="card"><h2>'+T('My messages','Mes messages')+'</h2><label class="lbl" for="m-bs">'+T('Headline of the day','Titre du jour')+'</label><textarea id="m-bs" rows="2" data-in="msg:bestShort">'+esc(bestShort())+'</textarea><div style="height:8px"></div><label class="lbl" for="m-bl">'+T('Longer version','Version longue')+'</label><textarea id="m-bl" rows="4" data-in="msg:bestLong">'+esc(bestLong())+'</textarea><div style="height:8px"></div><label class="lbl" for="m-ld">'+T('Remember my load','Ma charge à me rappeler')+'</label><textarea id="m-ld" rows="6" data-in="msg:loadMsg">'+esc(loadMsg())+'</textarea></div>'+
+   '<div class="card"><h2>'+T('Sound and motion','Son et animations')+'</h2>'+togRow('sound',T('Sounds','Sons'))+'<div class="row" style="padding:8px 0"><button class="btn sm" data-act="testSound">'+T('Play test sound','Tester le son')+'</button></div>'+togRow('confetti',T('Confetti and animation','Confettis et animations'))+togRow('prayerConfetti',T('Confetti for reading and recitation','Confettis pour lecture et récitation'),T('Off keeps those moments calm','Désactivé : ces moments restent calmes'))+togRow('awake',T('Keep screen awake','Garder l’écran allumé'),T('While the app is open','Tant que l’appli est ouverte'))+togRow('notif',T('Notifications','Notifications'),T('Only works while the app is open','Fonctionne seulement quand l’appli est ouverte'))+'</div>'+
    '<div class="card"><h2>'+T('Tiny tasks','Toutes petites tâches')+'</h2><p class="muted small">'+T('One per line. The lightning button picks one at random.','Une par ligne. Le bouton éclair en choisit une au hasard.')+'</p><textarea id="m-tiny" rows="7" data-in="tiny">'+esc(tinyList().join('\n'))+'</textarea></div>'+
    '<div class="card"><h2>'+T('Backup','Sauvegarde')+'</h2><p class="muted small">'+T('Your data lives only on this device. Copy a backup now and then and keep it somewhere safe, like Notes.','Tes données restent sur cet appareil. Copie une sauvegarde de temps en temps et garde-la en lieu sûr, par exemple dans Notes.')+'</p>'+
    '<p class="small">'+savedTxt()+'</p><div class="row"><button class="btn b-accent" data-act="backupCopy">'+T('Copy backup','Copier la sauvegarde')+'</button></div><div style="height:10px"></div><label class="lbl" for="bk">'+T('Paste a backup here to restore','Colle une sauvegarde ici pour restaurer')+'</label><textarea id="bk" rows="4" placeholder="{ ... }"></textarea><div style="height:8px"></div><div class="row"><button class="btn" data-act="restoreAsk">'+T('Restore','Restaurer')+'</button><label class="btn" for="bkfile" style="cursor:pointer">'+T('Choose file','Choisir un fichier')+'</label><input type="file" id="bkfile" accept=".json,application/json,text/plain" style="position:absolute;left:-9999px" data-in="file"></div></div>'+
@@ -1010,7 +1009,7 @@ const acts={
    if(g.ref){const ref=g.ref;setTimeout(()=>nextStepSheet(ref),1800)}
    reward('goal',{pts:25,big:true,extra:T('Treat yourself: ','Fais-toi plaisir : ')+pick(treatList())});award('goal1');render()},
  mood2:el=>{const v=Number(el.dataset.v),d=D();d.mood2=v;if(d.mood==null)d.mood=v;save();
-   if(v>=4){closeSheet();reward('mood',{pts:5});render()}else{boostSheet();render()}},
+   closeSheet();reward('mood',{pts:5});render()},
  boost:el=>{S.meta.lastBoost=el.dataset.v;showBoost(el.dataset.v)},
  boostAgain:()=>showBoost(S.meta.lastBoost||'insp'),
  showLoad:()=>loadSheet(),
@@ -1141,8 +1140,7 @@ function start(){
     sheet('<h2>'+T('Welcome to Tiny Wins','Bienvenue dans Tiny Wins')+'</h2><p>'+T('One rule here: no guilt, ever. Everything is optional and everything can be changed. A missed day just means a quiet day.','Une seule règle ici : jamais de culpabilité. Tout est facultatif et tout peut être modifié. Un jour manqué est juste un jour calme.')+'</p><p class="muted small">'+T('Your data stays on this device. Use the same page each time.','Tes données restent sur cet appareil. Utilise toujours la même page.')+'</p><button class="btn b-accent big" data-act="welcomeOk">'+T('Let’s go','C’est parti')+'</button>');
     return}
   const t=today(),sun=new Date().getDay()===0;
-  if(sun&&new Date().getHours()<13&&(!S.meta.loadShown||diffDays(S.meta.loadShown,t)>=14)){S.meta.loadShown=t;save();loadSheet()}
-  else if(sun&&S.meta.sundayShown!==t){S.meta.sundayShown=t;save();go('week')}
+  if(sun&&S.meta.sundayShown!==t){S.meta.sundayShown=t;save();go('week')}
   setTimeout(nudgeTick,1500)}
 start();
 })();
